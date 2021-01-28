@@ -187,5 +187,10 @@ struct arrayInfo {
     elem ls<5>;
 };
 
+struct noOverride {
+    int id;
+    elem e;
+};
+
 
 }

@@ -26,6 +26,9 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/details/traits.hpp>
 #include <xdrpp/types.h>
+#include <iostream>
+#include<boost/type_index.hpp>
+#include<iostream>
 
 namespace cereal {
 class JSONInputArchive;
@@ -132,6 +135,7 @@ template<typename Archive> struct nvp_adapter {
   template<typename T> static
   std::enable_if_t<!has_cereal_override<Archive, T>::value>
   apply(Archive &ar, T &&t, const char *field) {
+    std::cout << "Didn't find cereal_override for (" << type_id_with_cvr<decltype(t)>().pretty_name() << ", " << (field ? field : "nullptr") << ")" << std::endl;
     if (field)
       ar(cereal::make_nvp(field, std::forward<T>(t)));
     else
@@ -141,6 +145,7 @@ template<typename Archive> struct nvp_adapter {
   template<typename T> static
   std::enable_if_t<has_cereal_override<Archive, T>::value>
   apply(Archive &ar, T &&t, const char *field) {
+    std::cout << "Found cereal_override for (" << type_id_with_cvr<decltype(t)>().pretty_name() << ", " << (field ? field : "nullptr") << ")" << std::endl;
     cereal_override(ar, std::forward<T>(t), field);
   }
 };

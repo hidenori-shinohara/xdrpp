@@ -18,6 +18,9 @@
 #include <limits>
 
 #include <xdrpp/endian.h>
+#include<boost/type_index.hpp>
+#include<iostream>
+using boost::typeindex::type_id_with_cvr;
 
 //! Most of the xdrpp library is encapsulated in the xdr namespace.
 namespace xdr {
@@ -120,6 +123,11 @@ validate(const T &t)
   detail::call_validate(t, 0);
 }
 
+
+#include<stdio.h>
+
+
+
 //! This is used to apply an archive to a field.  It is designed as a
 //! template class that can be specialized to various archive formats,
 //! since some formats may want the fied name and others not.  Other
@@ -128,7 +136,8 @@ validate(const T &t)
 //! invoke \c archive_adapter::apply directly.  Instead, call \c
 //! xdr::archive, as the latter may be specialized for certain types.
 template<typename Archive> struct archive_adapter {
-  template<typename T> static void apply(Archive &ar, T &&t, const char *) {
+  template<typename T> static void apply(Archive &ar, T &&t, const char * name) {
+    std::cout << "You called archive_adapter::apply<" << type_id_with_cvr<decltype(t)>().pretty_name() << "> with (name = " << name << ")" << std::endl;
     ar(std::forward<T>(t));
   }
 };
@@ -144,6 +153,7 @@ template<typename Archive> struct archive_adapter {
 template<typename Archive, typename T> inline void
 archive(Archive &ar, T &&t, const char *name = nullptr)
 {
+    std::cout << "You called archive<" << type_id_with_cvr<decltype(t)>().pretty_name() << "> with (name = " << (name ? name : "nullptr") << ")" << std::endl;
   archive_adapter<Archive>::apply(ar, std::forward<T>(t), name);
 }
 
