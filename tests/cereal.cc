@@ -15,6 +15,18 @@ cereal_override(cereal::JSONOutputArchive &ar,
     xdr::archive(ar, e.a, "valueA");
 }
 
+template <typename T, uint32_t N>
+void
+cereal_override(cereal::JSONOutputArchive& ar, xdr::xvector<T, N> v, const char* field)
+{
+    std::vector<T> vv;
+	for (auto const& x : v)
+	{
+        vv.push_back(x);
+	}
+    xdr::archive(ar, vv, field);
+}
+
 void
 cereal_override(cereal::JSONOutputArchive &ar,
                 const testns::inner &t,
@@ -85,7 +97,7 @@ main()
     cout << obuf2.str();
     assert(obuf2.str().find("\"bort\": 9999") != string::npos);
   }
-
+  std::cout << std::endl << "================hidenori's output======================" << std::endl;
   {
       testns::elem e;
       e.a = 3;
@@ -138,6 +150,31 @@ main()
 //             {
 //                 "a": 16,
 //                 "b": 64
+//             }
+//         ]
+//     }
+// }
+//
+//
+// But I want the following:
+// {
+//     "information": {
+//         "id": 123,
+//         "ls": [
+//             {
+//                 "valueA": 0,
+//             },
+//             {
+//                 "valueA": 1,
+//             },
+//             {
+//                 "valueA": 4,
+//             },
+//             {
+//                 "valueA": 9,
+//             },
+//             {
+//                 "valueA": 16,
 //             }
 //         ]
 //     }
