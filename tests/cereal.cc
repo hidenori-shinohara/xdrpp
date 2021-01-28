@@ -9,6 +9,14 @@
 
 void
 cereal_override(cereal::JSONOutputArchive &ar,
+                const testns::elem &e,
+                const char* field)
+{
+    xdr::archive(ar, e.a, "valueA");
+}
+
+void
+cereal_override(cereal::JSONOutputArchive &ar,
                 const testns::inner &t,
                 const char* field)
 {
@@ -77,6 +85,63 @@ main()
     cout << obuf2.str();
     assert(obuf2.str().find("\"bort\": 9999") != string::npos);
   }
+
+  {
+      testns::elem e;
+      e.a = 3;
+      e.b = 5;
+      ostringstream obuf;
+      {
+          cereal::JSONOutputArchive ar(obuf);
+          xdr::archive(ar, e, "elemInfo");
+      }
+      std::cout << obuf.str() << std::endl;
+      assert(obuf.str() == "{\n    \"valueA\": 3\n}");
+  }
+  {
+      testns::arrayInfo ary;
+      ary.id = 123;
+      for (int i = 0; i < 5; i++)
+      {
+          ary.ls.extend_at(i).a = i * i;
+          ary.ls.extend_at(i).b = i * i * i;
+      }
+      ostringstream obuf;
+      {
+          cereal::JSONOutputArchive ar(obuf);
+          xdr::archive(ar, ary, "information");
+      }
+      std::cout << obuf.str() << std::endl;
+  }
+// The following gets outputted.
+// In other words, the cereal_override for `elem` defined above is ignored.
+// {
+//     "information": {
+//         "id": 123,
+//         "ls": [
+//             {
+//                 "a": 0,
+//                 "b": 0
+//             },
+//             {
+//                 "a": 1,
+//                 "b": 1
+//             },
+//             {
+//                 "a": 4,
+//                 "b": 8
+//             },
+//             {
+//                 "a": 9,
+//                 "b": 27
+//             },
+//             {
+//                 "a": 16,
+//                 "b": 64
+//             }
+//         ]
+//     }
+// }
 
   return 0;
 }

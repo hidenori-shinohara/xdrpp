@@ -177,4 +177,15 @@ struct outer {
   inner in;
 };
 
+struct elem {
+  int a;
+  int b;
+};
+
+struct arrayInfo {
+    int id;
+    elem ls<5>;
+};
+
+
 }
