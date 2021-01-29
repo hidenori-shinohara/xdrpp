@@ -137,7 +137,10 @@ validate(const T &t)
 //! xdr::archive, as the latter may be specialized for certain types.
 template<typename Archive> struct archive_adapter {
   template<typename T> static void apply(Archive &ar, T &&t, const char * name) {
-    std::cout << "You called archive_adapter::apply<" << type_id_with_cvr<decltype(t)>().pretty_name() << "> with (name = " << name << ")" << std::endl;
+    std::cout << "(xdrpp/types.h) You called archive_adapter::apply"
+              << "<" << type_id_with_cvr<decltype(t)>().pretty_name() << ">"
+              << "with (name = " << name << ")"
+              << std::endl;
     ar(std::forward<T>(t));
   }
 };
@@ -330,6 +333,7 @@ struct xdr_container_base : xdr_traits_base {
   static Constexpr const bool has_fixed_size = false;
 
   template<typename Archive> static void save(Archive &a, const T &t) {
+      std::cout << "hello world" << std::endl;
     if (variable)
       archive(a, size32(t.size()));
     for (const value_type &v : t)
@@ -800,10 +804,12 @@ template<std::size_t N, typename...T> struct tuple_base<N, std::tuple<T...>>
   }
 
   template<typename Archive> static void save(Archive &ar, const type &obj) {
+      std::cout << "hey, I'm here L806" << std::endl;
     tuple_base<N-1, type>::save(ar, obj);
     archive(ar, std::get<N-1>(obj), name());
   }
   template<typename Archive> static void load(Archive &ar, type &obj) {
+      std::cout << "hey, I'm here L811" << std::endl;
     tuple_base<N-1, type>::load(ar, obj);
     archive(ar, std::get<N-1>(obj), name());
   }

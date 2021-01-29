@@ -44,13 +44,15 @@ template<typename Archive, typename T>
 std::enable_if_t<xdr_traits<T>::is_class>
 save(Archive &ar, const T &t)
 {
-  xdr_traits<T>::save(ar, t);
+    std::cout << "(xdrpp/cereal.h) save(" << TYPENAME(t) << ") called" << std::endl;
+    xdr_traits<T>::save(ar, t);
 }
 
 template<typename Archive, typename T>
 std::enable_if_t<xdr_traits<T>::is_class>
 load(Archive &ar, T &t)
 {
+    std::cout << "cereal.h L55" << std::endl;
   xdr_traits<T>::load(ar, t);
 }
 

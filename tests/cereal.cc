@@ -6,16 +6,17 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
 #include "tests/xdrtest.hh"
+
 #include<boost/type_index.hpp>
-#include<iostream>
 using boost::typeindex::type_id_with_cvr;
+#define TYPENAME(t) type_id_with_cvr<decltype(t)>().pretty_name()
 
 void
 cereal_override(cereal::JSONOutputArchive &ar,
                 const testns::elem &e,
                 const char* field)
 {
-    std::cout << "cereal_override<" << type_id_with_cvr<decltype(e)>().pretty_name() << "> called with (field = " << field << ")" << std::endl;
+    std::cout << "cereal_override<" << TYPENAME(e) << "> called with (field = " << field << ")" << std::endl;
     xdr::archive(ar, e.a, "valueA");
 }
 
@@ -179,6 +180,7 @@ main()
       ostringstream obuf;
       {
           cereal::JSONOutputArchive ar(obuf);
+          xdr::archive(ar, v, "information");
           xdr::archive(ar, v, "information");
       }
       std::cout << obuf.str() << std::endl;
