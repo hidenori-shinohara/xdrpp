@@ -138,7 +138,7 @@ validate(const T &t)
 //! xdr::archive, as the latter may be specialized for certain types.
 template<typename Archive> struct archive_adapter {
   template<typename T> static void apply(Archive &ar, T &&t, const char * name) {
-    std::cout << "(xdrpp/types.h) You called archive_adapter::apply("
+    std::cout << "xdrpp/types.h:You called archive_adapter::apply("
               << TYPENAME(ar) << ", " << TYPENAME(t) << ", " << name << ")" << std::endl;
     ar(std::forward<T>(t));
   }
@@ -155,7 +155,7 @@ template<typename Archive> struct archive_adapter {
 template<typename Archive, typename T> inline void
 archive(Archive &ar, T &&t, const char *name = nullptr)
 {
-   std::cout << "(xdrpp/types.h) You called archive(" << TYPENAME(ar) << ", " << TYPENAME(t) << ", " << (name ? name : "nullptr") <<  ")" << std::endl;
+   std::cout << "xdrpp/types.h:You called archive(" << TYPENAME(ar) << ", " << TYPENAME(t) << ", " << (name ? name : "nullptr") <<  ")" << std::endl;
   archive_adapter<Archive>::apply(ar, std::forward<T>(t), name);
 }
 

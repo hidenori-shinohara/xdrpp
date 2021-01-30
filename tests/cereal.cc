@@ -23,13 +23,14 @@ cereal_override(cereal::JSONOutputArchive &ar,
               << ", "
               << (field ? field : "nullptr")
               << ")" << std::endl;
-//    xdr::archive(ar, e.a, "valueA");
-    xdr::archive(
-            ar,
-            std::make_tuple(
-                cereal::make_nvp("myValueA", e.a),
-                cereal::make_nvp("myValueB", e.b)),
-            field);
+    xdr::archive(ar, std::make_tuple(cereal::make_nvp("valueA", e.a)), field);
+//    xdr::archive(
+//
+//            ar,
+//            std::make_tuple(
+//                cereal::make_nvp("myValueA", e.a),
+//                cereal::make_nvp("myValueB", e.b)),
+//            field);
 }
 void f(cereal::JSONOutputArchive ar)
 {
@@ -115,21 +116,21 @@ main()
 //    assert(obuf2.str().find("\"bort\": 9999") != string::npos);
 //  }
   std::cout << std::endl << "================hidenori's output======================" << std::endl;
-//   {
-//       testns::elem e;
-//       e.a = 3;
-//       e.b = 5;
-//       ostringstream obuf;
-//       {
-//           cereal::JSONOutputArchive ar(obuf);
-//           xdr::archive(ar, e, "elemInfo"); // works well, cereal_override
-// //          ar(e, "elemInfo"); // nonsense
-// //          ar(ary.ls.extend_at(0), "elemInfo"); // nonsense
-// //          xdr::archive(ar, ary.ls.extend_at(0), "elemInfo"); // works well, cereal_override
-//       }
-//       std::cout << obuf.str() << std::endl;
-// //      assert(obuf.str() == "{\n    \"valueA\": 3\n}");
-//   }
+   {
+       testns::elem e;
+       e.a = 3;
+       e.b = 5;
+       ostringstream obuf;
+       {
+           cereal::JSONOutputArchive ar(obuf);
+           xdr::archive(ar, e, "elemInfo"); // works well, cereal_override
+ //          ar(e, "elemInfo"); // nonsense
+ //          ar(ary.ls.extend_at(0), "elemInfo"); // nonsense
+ //          xdr::archive(ar, ary.ls.extend_at(0), "elemInfo"); // works well, cereal_override
+       }
+       std::cout << obuf.str() << std::endl;
+ //      assert(obuf.str() == "{\n    \"valueA\": 3\n}");
+   }
   {
       testns::arrayInfo ary;
       ary.id = 123;

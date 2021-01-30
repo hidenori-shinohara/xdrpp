@@ -49,14 +49,14 @@ save(Archive &ar, const T &t)
     xdr_traits<T>::save(ar, t);
 }
 
-template<typename Archive, typename T>
-std::enable_if_t<xdr_traits<T>::is_container>
-save(Archive &ar, const T &t)
+template<typename Archive, typename T, uint32_t N>
+void
+save(Archive &ar, const xdr::xvector<T, N> &t)
 {
     std::cout << "xdrpp/cereal.h:is_container save(" << TYPENAME(ar) << ", " << TYPENAME(t) << ")" << std::endl;
   // Do not call into xdr_traits<T>::save because it doesn't handle the size tag
   // correctly
-  ar(cereal::make_size_tag(static_cast<cereal::size_type>(t.size())));
+  ar(cereal::make_size_tag(static_cast<cereal::size_type>(N)));
   for (auto const &v : t)
     xdr::archive(ar, v);
 }
@@ -152,7 +152,9 @@ template<typename Archive> struct nvp_adapter {
   apply(Archive &ar, T &&t, const char *field) {
     std::cout << "(xdrpp/cereal.h) !has_cereal_override: apply(" << TYPENAME(ar) << ", " << TYPENAME(t) << ", " << (field ? field : "nullptr") << ")" << std::endl;
     if (field)
+    {
       ar(cereal::make_nvp(field, std::forward<T>(t)));
+    }
     else
       ar(std::forward<T>(t));
   }
