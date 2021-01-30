@@ -44,6 +44,17 @@ save(Archive &ar, const T &t)
   xdr_traits<T>::save(ar, t);
 }
 
+template<typename Archive, typename T, uint32_t N>
+void
+save(Archive &ar, const xdr::xvector<T, N> &t)
+{
+  // Do not call into xdr_traits<T>::save because it doesn't handle the size tag
+  // correctly
+  ar(cereal::make_size_tag(static_cast<cereal::size_type>(N)));
+  for (auto const &v : t)
+    xdr::archive(ar, v);
+}
+
 template<typename Archive, typename T>
 std::enable_if_t<xdr_traits<T>::is_class>
 load(Archive &ar, T &t)
