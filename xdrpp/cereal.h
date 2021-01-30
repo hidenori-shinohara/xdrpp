@@ -45,6 +45,7 @@ std::enable_if_t<xdr_traits<T>::is_class>
 save(Archive &ar, const T &t)
 {
     std::cout << "(xdrpp/cereal.h) save(" << TYPENAME(t) << ") called" << std::endl;
+    // I think from here we go to L2395 of xdrpp/tests/xdrtest.hh.
     xdr_traits<T>::save(ar, t);
 }
 
@@ -52,7 +53,6 @@ template<typename Archive, typename T>
 std::enable_if_t<xdr_traits<T>::is_class>
 load(Archive &ar, T &t)
 {
-    std::cout << "cereal.h L55" << std::endl;
   xdr_traits<T>::load(ar, t);
 }
 
@@ -137,7 +137,7 @@ template<typename Archive> struct nvp_adapter {
   template<typename T> static
   std::enable_if_t<!has_cereal_override<Archive, T>::value>
   apply(Archive &ar, T &&t, const char *field) {
-    std::cout << "Didn't find cereal_override for (" << type_id_with_cvr<decltype(t)>().pretty_name() << ", " << (field ? field : "nullptr") << ")" << std::endl;
+    std::cout << "(xdrpp/cereal.h) !has_cereal_override: apply(" << TYPENAME(ar) << ", " << TYPENAME(t) << ", " << (field ? field : "nullptr") << ")" << std::endl;
     if (field)
       ar(cereal::make_nvp(field, std::forward<T>(t)));
     else
@@ -147,7 +147,7 @@ template<typename Archive> struct nvp_adapter {
   template<typename T> static
   std::enable_if_t<has_cereal_override<Archive, T>::value>
   apply(Archive &ar, T &&t, const char *field) {
-    std::cout << "Found cereal_override for (" << type_id_with_cvr<decltype(t)>().pretty_name() << ", " << (field ? field : "nullptr") << ")" << std::endl;
+    std::cout << "(xdrpp/cereal.h) Found cereal_override for (" << type_id_with_cvr<decltype(t)>().pretty_name() << ", " << (field ? field : "nullptr") << ")" << std::endl;
     cereal_override(ar, std::forward<T>(t), field);
   }
 };
@@ -158,7 +158,26 @@ template<typename Archive> struct nvp_adapter {
 template<> struct archive_adapter<cereal::archive>	\
  : detail::nvp_adapter<cereal::archive> {}
 CEREAL_ARCHIVE_TAKES_NAME(JSONInputArchive);
-CEREAL_ARCHIVE_TAKES_NAME(JSONOutputArchive);
+template<> struct archive_adapter<cereal::JSONOutputArchive> : detail::nvp_adapter<cereal::JSONOutputArchive> {
+
+  template<typename T> static
+  std::enable_if_t<!detail::has_cereal_override<cereal::JSONOutputArchive, T>::value>
+  apply(cereal::JSONOutputArchive &ar, T &&t, const char *field) {
+    std::cout << "(xdrpp/cereal.h) !has_cereal_override: nvp-adapter::apply(" << TYPENAME(ar) << ", " << TYPENAME(t) << ", " << (field ? field : "nullptr") << ")" << std::endl;
+    if (field)
+      ar(cereal::make_nvp(field, std::forward<T>(t)));
+    else
+      ar(std::forward<T>(t));
+  }
+
+  template<typename T> static
+  std::enable_if_t<detail::has_cereal_override<cereal::JSONOutputArchive, T>::value>
+  apply(cereal::JSONOutputArchive &ar, T &&t, const char *field) {
+    std::cout << "(xdrpp/cereal.h) has_cereal_override: nvp_adapter::apply(" << TYPENAME(t) << ", " << (field ? field : "nullptr") << ")" << std::endl;
+    cereal_override(ar, std::forward<T>(t), field);
+  }
+
+};
 CEREAL_ARCHIVE_TAKES_NAME(XMLOutputArchive);
 CEREAL_ARCHIVE_TAKES_NAME(XMLInputArchive);
 #undef CEREAL_ARCHIVE_TAKES_NAME

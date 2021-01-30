@@ -19,6 +19,18 @@ cereal_override(cereal::JSONOutputArchive &ar,
     std::cout << "cereal_override<" << TYPENAME(e) << "> called with (field = " << field << ")" << std::endl;
     xdr::archive(ar, e.a, "valueA");
 }
+void f(cereal::JSONOutputArchive ar)
+{
+    testns::elem e;
+    xdr::xdr_traits<::testns::elem>::save(ar, e);
+    testns::arrayInfo a;
+    xdr::xdr_traits<::testns::arrayInfo>::save(ar, a);
+    xdr::xvector<int, 3> v;
+    xdr::xdr_traits<xdr::xvector<int, 3>>::save(ar, v);
+    testns::noOverride no;
+    xdr::xdr_traits<::testns::noOverride>::save(ar, no);
+}
+
 
 void
 cereal_override(cereal::JSONOutputArchive &ar,
@@ -91,18 +103,18 @@ main()
     assert(obuf2.str().find("\"bort\": 9999") != string::npos);
   }
   std::cout << std::endl << "================hidenori's output======================" << std::endl;
-  {
-      testns::elem e;
-      e.a = 3;
-      e.b = 5;
-      ostringstream obuf;
-      {
-          cereal::JSONOutputArchive ar(obuf);
-          xdr::archive(ar, e, "elemInfo");
-      }
-      std::cout << obuf.str() << std::endl;
-      assert(obuf.str() == "{\n    \"valueA\": 3\n}");
-  }
+//  {
+//      testns::elem e;
+//      e.a = 3;
+//      e.b = 5;
+//      ostringstream obuf;
+//      {
+//          cereal::JSONOutputArchive ar(obuf);
+//          xdr::archive(ar, e, "elemInfo");
+//      }
+//      std::cout << obuf.str() << std::endl;
+//      assert(obuf.str() == "{\n    \"valueA\": 3\n}");
+//  }
   {
       testns::arrayInfo ary;
       ary.id = 123;
@@ -114,6 +126,7 @@ main()
       ostringstream obuf;
       {
           cereal::JSONOutputArchive ar(obuf);
+          save(ar, ary.ls);
           xdr::archive(ar, ary, "information");
       }
       std::cout << obuf.str() << std::endl;
@@ -172,19 +185,19 @@ main()
 //         ]
 //     }
 // }
-  {
-      testns::noOverride v;
-      v.id = 1;
-      v.e.a = 2;
-      v.e.b = 3;
-      ostringstream obuf;
-      {
-          cereal::JSONOutputArchive ar(obuf);
-          xdr::archive(ar, v, "information");
-          xdr::archive(ar, v, "information");
-      }
-      std::cout << obuf.str() << std::endl;
-  }
+//  {
+//      testns::noOverride v;
+//      v.id = 1;
+//      v.e.a = 2;
+//      v.e.b = 3;
+//      ostringstream obuf;
+//      {
+//          cereal::JSONOutputArchive ar(obuf);
+//          xdr::archive(ar, v, "information");
+//          xdr::archive(ar, v, "information");
+//      }
+//      std::cout << obuf.str() << std::endl;
+//  }
 
   return 0;
 }
