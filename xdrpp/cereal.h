@@ -44,10 +44,23 @@ template<typename Archive, typename T>
 std::enable_if_t<xdr_traits<T>::is_class>
 save(Archive &ar, const T &t)
 {
-    std::cout << "(xdrpp/cereal.h) save(" << TYPENAME(t) << ") called" << std::endl;
+    std::cout << "xdrpp/cereal.h:save(" << TYPENAME(t) << ") called" << std::endl;
     // I think from here we go to L2395 of xdrpp/tests/xdrtest.hh.
     xdr_traits<T>::save(ar, t);
 }
+
+template<typename Archive, typename T>
+std::enable_if_t<xdr_traits<T>::is_container>
+save(Archive &ar, const T &t)
+{
+    std::cout << "xdrpp/cereal.h:is_container save(" << TYPENAME(ar) << ", " << TYPENAME(t) << ")" << std::endl;
+  // Do not call into xdr_traits<T>::save because it doesn't handle the size tag
+  // correctly
+  ar(cereal::make_size_tag(static_cast<cereal::size_type>(t.size())));
+  for (auto const &v : t)
+    xdr::archive(ar, v);
+}
+
 
 template<typename Archive, typename T>
 std::enable_if_t<xdr_traits<T>::is_class>

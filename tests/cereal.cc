@@ -16,8 +16,20 @@ cereal_override(cereal::JSONOutputArchive &ar,
                 const testns::elem &e,
                 const char* field)
 {
-    std::cout << "cereal_override<" << TYPENAME(e) << "> called with (field = " << field << ")" << std::endl;
-    xdr::archive(ar, e.a, "valueA");
+    std::cout << "tests/cereal.cc:cereal_override("
+              << TYPENAME(ar)
+              << ", "
+              << TYPENAME(e)
+              << ", "
+              << (field ? field : "nullptr")
+              << ")" << std::endl;
+//    xdr::archive(ar, e.a, "valueA");
+    xdr::archive(
+            ar,
+            std::make_tuple(
+                cereal::make_nvp("myValueA", e.a),
+                cereal::make_nvp("myValueB", e.b)),
+            field);
 }
 void f(cereal::JSONOutputArchive ar)
 {
@@ -47,74 +59,77 @@ using namespace std;
 int
 main()
 {
-  testns::numerics n1, n2;
-  n1.b = true;
-  n2.b = false;
-  n1.i1 = 0x7eeeeeee;
-  n1.i2 = 0xffffffff;
-  n1.i3 = UINT64_C(0x7ddddddddddddddd);
-  n1.i4 = UINT64_C(0xfccccccccccccccc);
-  n1.f1 = 3.141592654;
-  n1.f2 = 2.71828182846;
-  n1.e1 = testns::REDDER;
-  n2.e1 = testns::REDDEST;
-
-  cout << xdr::xdr_to_string(n1);
-
-  ostringstream obuf;
-  {
-    //cereal::BinaryOutputArchive archive(obuf);
-    cereal::JSONOutputArchive archive(obuf);
-    archive(n1);
-  }
-
-  cout << obuf.str() << endl;
-
-  {
-    istringstream ibuf(obuf.str());
-    //cereal::BinaryInputArchive archive(ibuf);
-    cereal::JSONInputArchive archive(ibuf);
-    archive(n2);
-  }
-
-  cout << xdr::xdr_to_string(n2);
-
-  testns::nested_cereal_adapter_calls nc;
-  nc.strptr.activate() = "hello";
-  nc.strvec.push_back("goodbye");
-  nc.strarr[0] = "friends";
-  {
-    ostringstream obuf2;
-    {
-      cereal::JSONOutputArchive archive(obuf2);
-      archive(nc);
-    }
-    cout << obuf2.str();
-  }
-
-  {
-    testns::outer tu;
-    ostringstream obuf2;
-    {
-      cereal::JSONOutputArchive archive(obuf2);
-      archive(tu);
-    }
-    cout << obuf2.str();
-    assert(obuf2.str().find("\"bort\": 9999") != string::npos);
-  }
-  std::cout << std::endl << "================hidenori's output======================" << std::endl;
+//  testns::numerics n1, n2;
+//  n1.b = true;
+//  n2.b = false;
+//  n1.i1 = 0x7eeeeeee;
+//  n1.i2 = 0xffffffff;
+//  n1.i3 = UINT64_C(0x7ddddddddddddddd);
+//  n1.i4 = UINT64_C(0xfccccccccccccccc);
+//  n1.f1 = 3.141592654;
+//  n1.f2 = 2.71828182846;
+//  n1.e1 = testns::REDDER;
+//  n2.e1 = testns::REDDEST;
+//
+//  cout << xdr::xdr_to_string(n1);
+//
+//  ostringstream obuf;
 //  {
-//      testns::elem e;
-//      e.a = 3;
-//      e.b = 5;
-//      ostringstream obuf;
-//      {
-//          cereal::JSONOutputArchive ar(obuf);
-//          xdr::archive(ar, e, "elemInfo");
-//      }
-//      std::cout << obuf.str() << std::endl;
-//      assert(obuf.str() == "{\n    \"valueA\": 3\n}");
+//    //cereal::BinaryOutputArchive archive(obuf);
+//    cereal::JSONOutputArchive archive(obuf);
+//    archive(n1);
 //  }
+//
+//  cout << obuf.str() << endl;
+//
+//  {
+//    istringstream ibuf(obuf.str());
+//    //cereal::BinaryInputArchive archive(ibuf);
+//    cereal::JSONInputArchive archive(ibuf);
+//    archive(n2);
+//  }
+//
+//  cout << xdr::xdr_to_string(n2);
+//
+//  testns::nested_cereal_adapter_calls nc;
+//  nc.strptr.activate() = "hello";
+//  nc.strvec.push_back("goodbye");
+//  nc.strarr[0] = "friends";
+//  {
+//    ostringstream obuf2;
+//    {
+//      cereal::JSONOutputArchive archive(obuf2);
+//      archive(nc);
+//    }
+//    cout << obuf2.str();
+//  }
+//
+//  {
+//    testns::outer tu;
+//    ostringstream obuf2;
+//    {
+//      cereal::JSONOutputArchive archive(obuf2);
+//      archive(tu);
+//    }
+//    cout << obuf2.str();
+//    assert(obuf2.str().find("\"bort\": 9999") != string::npos);
+//  }
+  std::cout << std::endl << "================hidenori's output======================" << std::endl;
+//   {
+//       testns::elem e;
+//       e.a = 3;
+//       e.b = 5;
+//       ostringstream obuf;
+//       {
+//           cereal::JSONOutputArchive ar(obuf);
+//           xdr::archive(ar, e, "elemInfo"); // works well, cereal_override
+// //          ar(e, "elemInfo"); // nonsense
+// //          ar(ary.ls.extend_at(0), "elemInfo"); // nonsense
+// //          xdr::archive(ar, ary.ls.extend_at(0), "elemInfo"); // works well, cereal_override
+//       }
+//       std::cout << obuf.str() << std::endl;
+// //      assert(obuf.str() == "{\n    \"valueA\": 3\n}");
+//   }
   {
       testns::arrayInfo ary;
       ary.id = 123;
@@ -126,10 +141,10 @@ main()
       ostringstream obuf;
       {
           cereal::JSONOutputArchive ar(obuf);
-          save(ar, ary.ls);
           xdr::archive(ar, ary, "information");
       }
       std::cout << obuf.str() << std::endl;
+      std::cout << "hello world" << std::endl;
   }
 // The following gets outputted.
 // In other words, the cereal_override for `elem` defined above is ignored.
