@@ -177,4 +177,14 @@ struct outer {
   inner in;
 };
 
+struct elem {
+  int a;
+  double b;
+};
+
+struct arrayWithId {
+    int id;
+    elem ls<3>;
+};
+
 }

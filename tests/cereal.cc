@@ -9,6 +9,18 @@
 
 void
 cereal_override(cereal::JSONOutputArchive &ar,
+                const testns::elem &e,
+                const char* field)
+{
+    xdr::archive(ar,
+            std::make_tuple(
+                cereal::make_nvp("overriddenElemA", e.a),
+                cereal::make_nvp("overriddenElemB", e.b)),
+            field);
+}
+
+void
+cereal_override(cereal::JSONOutputArchive &ar,
                 const testns::inner &t,
                 const char* field)
 {
@@ -77,6 +89,46 @@ main()
     cout << obuf2.str();
     assert(obuf2.str().find("\"bort\": 9999") != string::npos);
   }
+
+  {
+      testns::arrayWithId ary;
+      ary.id = 123;
+      for (int i = 0; i < 3; i++)
+      {
+          ary.ls.extend_at(i).a = i * i;
+          ary.ls.extend_at(i).b = i * i * i;
+      }
+      ostringstream obuf;
+      {
+          cereal::JSONOutputArchive ar(obuf);
+          xdr::archive(ar, ary, "arrayWithElems");
+      }
+      std::cout << obuf.str() << std::endl;
+      // arrayWithId contains an xvector of elems.
+      // Since elem has cereal_override,
+      // the cereal_override should be applied to each element in the xvector.
+      std::string expected =
+        "{\n"
+        "    \"arrayWithElems\": {\n"
+        "        \"id\": 123,\n"
+        "        \"ls\": [\n"
+        "            {\n"
+        "                \"overriddenElemA\": 0,\n"
+        "                \"overriddenElemB\": 0.0\n"
+        "            },\n"
+        "            {\n"
+        "                \"overriddenElemA\": 1,\n"
+        "                \"overriddenElemB\": 1.0\n"
+        "            },\n"
+        "            {\n"
+        "                \"overriddenElemA\": 4,\n"
+        "                \"overriddenElemB\": 8.0\n"
+        "            }\n"
+        "        ]\n"
+        "    }\n"
+        "}";
+      assert(obuf.str() == expected);
+    }
 
   return 0;
 }
