@@ -177,4 +177,20 @@ struct outer {
   inner in;
 };
 
+struct elem {
+  int memberId;
+  int memberName;
+};
+
+struct array1 {
+  int id;
+  elem ary1<3>;
+};
+
+struct array2 {
+  int id;
+  array1 ary2<3>;
+};
+
+
 }
